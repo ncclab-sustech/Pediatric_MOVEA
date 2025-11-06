@@ -1,7 +1,9 @@
 # Personalized optimization of pediatric HD-tDCS for dose consistency and target engagement
 
 ## Introduction
-This repository contains the official implementation of the MOVEA algorithm for optimizing high-definition transcranial electrical stimulation (HD-tES) of the human brain and data for Personalized optimization of pediatric HD-tDCS for dose consistency and target engagement. MOVEA is a multi-objective optimization approach that utilizes an evolutionary algorithm to find optimal stimulation parameters for a given target brain area. The code has been tested on a Linux system.
+This repository contains the official implementation of Personalized optimization of pediatric HD-tDCS for dose consistency and target engagement. 
+The processed data can be found in the `data` folder.
+MOVEA is a multi-objective optimization approach that utilizes an evolutionary algorithm to find optimal stimulation parameters for a given target brain area. 
 
 ## Dependencies
 - Linux
@@ -50,4 +52,5 @@ If you find this code useful for your research, please consider citing the follo
 
 ## Contact
 We provide some results from the paper in 'others', for any questions or issues related to this implementation, please contact the authors.
+
 
