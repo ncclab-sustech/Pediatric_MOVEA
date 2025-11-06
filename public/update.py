@@ -5,19 +5,28 @@ from  public import NDsort
 
 
 def update_v(v_,v_min,v_max,in_,in_pbest,in_gbest):
-    w = 0.4  
+    #更新速度ٶ�ֵ
+
+    w = 0.4  # 0.4
     N,D = v_.shape
     r1 = np.tile(np.random.rand(N,1),(1,D))
     r2 = np.tile(np.random.rand(N,1),(1,D))
     c1 = 2
     c2 = 2
     v_temp = w*v_ + c1 * r1*(in_pbest-in_) + c2 * r2*(in_gbest-in_)
+
+    #速度边界处理ֵ
+    # Upper = np.tile(v_max,(N,1))
+    # Lower = np.tile(v_min,(N,1))
+    # v_temp = np.maximum(np.minimum(Upper,v_temp), Lower) # v不存在上下限，因此是否有必要进行限制(处理了）
     return v_temp
 
 
 def update_in(in_,v_,in_min,in_max):
     N, D = in_.shape
+    #更新位置
     in_temp = in_ + v_
+    #越界处理ֵ
     Upper = np.tile(in_max, (N, 1))
     Lower = np.tile(in_min, (N, 1))
     in_temp = np.maximum(np.minimum(Upper,in_temp), Lower)
@@ -42,16 +51,10 @@ def update_pbest(in_,fitness_,in_pbest,out_pbest):
 
 
 def update_archive_1(in_,fitness_,archive_in,archive_fitness,thresh,mesh_div):
-
-    # FrontValue_1_index = NDsort.NDSort(fitness_, in_.shape[0])[0]==1
-    # FrontValue_1_index = np.reshape(FrontValue_1_index,(-1,))
-    # with open('in.txt', 'a') as f:  
-    #     np.savetxt(f, in_[FrontValue_1_index]) 
-    # with open('fitness.txt', 'a') as f:  
-    #     np.savetxt(f, fitness_[FrontValue_1_index])  
-
+    ##首先，计算当前粒子群的pareto边界，将边界粒子加入到存档archiving中
     total_Pop = np.vstack((archive_in,in_))
     total_Func = np.vstack((archive_fitness,fitness_))
+
     FrontValue_1_index = NDsort.NDSort(total_Func, total_Pop.shape[0])[0]==1
     FrontValue_1_index = np.reshape(FrontValue_1_index,(-1,))
     archive_in =total_Pop[FrontValue_1_index]
@@ -67,6 +70,7 @@ def update_archive_1(in_,fitness_,archive_in,archive_fitness,thresh,mesh_div):
 def Delete(archiving_fit,K,mesh_div):
     Nop, num_obj = archiving_fit.shape
 
+    # %% Calculate the grid location of each solution
     fmax = np.max(archiving_fit, axis=0)
     fmin = np.min(archiving_fit, axis=0)
     d = (fmax - fmin) / mesh_div
@@ -76,8 +80,11 @@ def Delete(archiving_fit,K,mesh_div):
     Gloc[Gloc >= mesh_div] = mesh_div - 1
     Gloc[np.isnan(Gloc)] = 0
 
+    # Detect the grid of each solution belongs to
     _, _, Site = np.unique(Gloc, return_index=True, return_inverse=True, axis=0)
 
+
+    # Calculate the crowd degree of each grid
     CrowdG = np.histogram(Site, np.max(Site)+1)[0]
     CrowdG_ =CrowdG.copy()
 
@@ -89,6 +96,8 @@ def Delete(archiving_fit,K,mesh_div):
         Grid = maxGrid[Temp]
 
         InGrid = np.where(Site==Grid)[0]
+
+
         Temp = np.random.randint(0,len(InGrid))
         p = InGrid[Temp]
         Del_index[p] = True
@@ -98,8 +107,15 @@ def Delete(archiving_fit,K,mesh_div):
     return np.where(Del_index==1)[0]
 
 
+
+
+
+
+
 def update_gbest_1(archiving_in,archiving_fit,mesh_div,particals):
     Nop,num_obj =  archiving_fit.shape
+
+    # %% Calculate the grid location of each solution
     fmax = np.max(archiving_fit,axis=0)
     fmin = np.min(archiving_fit,axis=0)
     d = (fmax-fmin)/mesh_div
@@ -109,8 +125,13 @@ def update_gbest_1(archiving_in,archiving_fit,mesh_div,particals):
     Gloc[Gloc>=mesh_div] = mesh_div-1
     Gloc[np.isnan(Gloc)] = 0
 
+    #Detect the grid of each solution belongs to
     _,_,Site = np.unique(Gloc, return_index=True,return_inverse=True,axis=0)
+
+    #Calculate the crowd degree of each grid
     CrowdG =  np.histogram(Site,np.max(Site)+1)[0]
+
+    #  Roulette-wheel 1/Fitnessselection
     TheGrid = RouletteWheelSelection(particals,CrowdG)
 
     ReP = np.zeros(particals,)
